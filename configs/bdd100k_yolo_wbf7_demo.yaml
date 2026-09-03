@@ -1,0 +1,182 @@
+# Demo-oriented 7-way WBF config. Uses the same fusion ceiling as
+# configs/bdd100k_yolo_wbf7_perkind_iou_online.yaml, but enables lane
+# smoothing, simple IoU tracking and monocular distance estimation so that
+# `scripts/demo_image.py` / `scripts/demo_video.py` produce a full ADAS
+# experience. For pure accuracy evaluation use the _online.yaml variant
+# instead (tracking smooths but can add latency on dense scenes).
+objects:
+  enabled: true
+  detectors:
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 1024
+      augment: false
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 1024
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k_even_copy_paste_v2_tl_1000_1024_1ep.pt
+      image_size: 1024
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 1280
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 960
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 1536
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+    - backend: ultralytics
+      model: outputs/models/adas_yolov8n_bdd100k.pt
+      image_size: 1792
+      augment: true
+      score_threshold: 0.05
+      score_thresholds_by_kind: {pedestrian: 0.05, vehicle: 0.05, traffic_sign: 0.05, traffic_light: 0.05}
+      iou_threshold: 0.50
+      max_detections: 500
+      class_groups:
+        pedestrian: [pedestrian, rider]
+        vehicle: [bicycle, bus, car, motorcycle, train, truck]
+        traffic_sign: [traffic sign]
+        traffic_light: [traffic light]
+  fusion:
+    mode: wbf
+    iou_thr: 0.55
+    kind_iou_thr: {pedestrian: 0.50, traffic_light: 0.40, traffic_sign: 0.40, vehicle: 0.50}
+    weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  post_fusion_score_thresholds_by_kind:
+    pedestrian: 0.25
+    vehicle: 0.30
+    traffic_sign: 0.30
+    traffic_light: 0.25
+
+signs:
+  enabled: false
+
+traffic_lights:
+  enabled: false
+
+lane:
+  enabled: true
+  # Pluggable backend. The CV path stays available as a fallback when no
+  # ONNX model is on disk; the demo uses TwinLiteNet (BDD100K, MIT, ~1.8 MB).
+  # See configs/lane_twinlitenet.yaml for the standalone preset and the
+  # README for the wget command.
+  backend: segmentation
+  color_mask:
+    enabled: true
+    dilate_iterations: 2
+  polynomial_fit:
+    enabled: true
+    min_points: 6
+    polyline_samples: 12
+  segmentation:
+    model_path: outputs/models/twinlitenet_lane.onnx
+    input_size: [360, 640]
+    output_name: ll
+    lane_channel: 1
+    lane_threshold: 0.5
+    min_blob_pixels: 200
+    polyline_samples: 20
+    input_layout: NCHW
+    normalize:
+      mean: [0.0, 0.0, 0.0]
+      std: [1.0, 1.0, 1.0]
+      scale: 255.0
+
+lane_smoothing:
+  enabled: true
+  window: 5
+
+tracking:
+  enabled: true
+  iou_threshold: 0.30
+  max_missed: 5
+  motion_prediction: true
+  centroid_distance_fraction: 0.5
+  two_stage: true
+  high_score_threshold: 0.50
+  low_score_threshold: 0.10
+
+distance_estimation:
+  enabled: true
+  # Approximate intrinsics + camera height for typical dashcam (1920x1080
+  # input): treats fx ≈ fy ≈ 1500 px, principal point at image center,
+  # camera 1.4 m above the road. Replace with your own calibration when
+  # available; without `camera_height_m` ground_position_m stays None and
+  # only `distance_m` (bbox-height projection) is populated.
+  intrinsics:
+    fx: 1500.0
+    fy: 1500.0
+    cx: 960.0
+    cy: 540.0
+  camera_height_m: 1.4
+
+visualization:
+  show_summary: true
+  label_style: compact
+  min_confidence: 0.30
+  avoid_label_overlap: true
+  distance_format: rounded
+  # Toggle ground (X, Z) [m] in the label tail. Off keeps the GIF clean;
+  # flip to true to inspect ground projections.
+  show_ground_position: false
