@@ -1,8 +1,5 @@
 # adas-perception
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Tests](https://img.shields.io/badge/tests-pytest-brightgreen)
-
 A lightweight Python ADAS demo that detects **lanes, road users, traffic signs, and traffic lights** from a monocular dashcam and renders the results as JSON / video overlays.
 A **rule-based planning overlay** can also be replayed from saved perception JSON.
 
@@ -86,64 +83,6 @@ python scripts/web_demo.py
 Upload images/videos from the browser UI to inspect detection results. Turning **Enable planning overlay** ON
 also renders target path / behavior / warnings (research/demo use only).
 
-### Planning overlay
-
-**Quick demo** (bundled fixture, no GPU weights required):
-
-```bash
-python scripts/run_planning_demo.py \
-  --video assets/demo_wbf7.mp4 \
-  --output-dir outputs/planning_demo \
-  --compare-configs \
-  --export-benchmark
-```
-
-Outputs: `planning_frames.json`, `planning_overlay.mp4`, `driving_replay.json` (perception + planning combined)
-
-**Perception → planning in one shot from a video** (weights auto-download; the post-NMS preset is the default):
-
-```bash
-python scripts/run_planning_demo.py \
-  --run-perception \
-  --video assets/demo_wbf7.mp4 \
-  --max-frames 120 \
-  --output-dir outputs/planning_demo_live
-```
-
-To fall back to the torchvision baseline that needs no extra weights:
-
-```bash
-python scripts/run_planning_demo.py \
-  --run-perception \
-  --perception-config configs/default.yaml \
-  --video assets/demo_wbf7.mp4 \
-  --output-dir outputs/planning_demo_torchvision
-```
-
-**Finetuned 1024px (post-NMS explicit)**:
-
-```bash
-python scripts/run_planning_demo.py \
-  --run-perception \
-  --perception-config configs/bdd100k_yolo_kind_tuned_post_nms.yaml \
-  --video assets/demo_wbf7.mp4 \
-  --output-dir outputs/planning_demo_post_nms
-```
-
-Maximum accuracy (WBF 7-way, heavy):
-
-```bash
-python scripts/run_planning_demo.py \
-  --run-perception \
-  --perception-config configs/bdd100k_yolo_wbf7_demo.yaml \
-  --video assets/demo_wbf7.mp4 \
-  --output-dir outputs/planning_demo_wbf7
-```
-
-Configs: `configs/planning/default.yaml` / `conservative.yaml` / `aggressive_demo.yaml`
-Scenario evaluation: `python scripts/eval_planning_scenarios.py --scenarios-dir scenarios --output outputs/scenarios.json`
-
-
 ## BDD100K evaluation
 
 **Fetch the val mirror** (Hugging Face, ~1GB):
@@ -164,29 +103,6 @@ python scripts/evaluate_bdd100k.py \
   --group-by-size \
   --output outputs/bdd100k_eval.json
 ```
-
-### Retrain on the official train split (optional, can be skipped for now)
-
-1. Get the train images + labels from the [official BDD100K site](https://bdd-data.berkeley.edu/)
-2. Place them as follows:
-
-```text
-data/bdd100k/images/100k/train/
-data/bdd100k/labels/det_20/det_train.json
-data/bdd100k/images/100k/val/          # available via prepare --download-val
-data/bdd100k/labels/det_20/det_val.json
-```
-
-3. Run:
-
-```bash
-bash scripts/bootstrap_bdd100k_official_train.sh
-RUN_TRAIN=1 bash scripts/bootstrap_bdd100k_official_train.sh 10
-```
-
-If `adas_yolov8n_bdd100k.pt` is missing, fine-tuning starts from `yolov8n.pt`.
-
----
 
 ## Main scripts
 
