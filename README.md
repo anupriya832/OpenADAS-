@@ -2,7 +2,6 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Tests](https://img.shields.io/badge/tests-pytest-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 A lightweight Python ADAS demo that detects **lanes, road users, traffic signs, and traffic lights** from a monocular dashcam and renders the results as JSON / video overlays.
 A **rule-based planning overlay** can also be replayed from saved perception JSON.
